@@ -1,6 +1,6 @@
 {
   "name": "expo-config-plugin-appodeal",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Expo Config Plugin to automate Appodeal setup in Expo-managed apps",
   "main": "build/index.js",
   "types": "build/index.d.ts",

@@ -1,4 +1,3 @@
-````markdown
 # expo-config-plugin-appodeal
 
 A **TypeScript-based** Expo Config Plugin that automates the native setup for the **Appodeal** ads SDK in Expo‑managed apps (SDK 48+). This plugin saves you from manually editing Podfiles, Gradle files, and Info.plist. Just install the plugin, configure your `app.json`, and **EAS Build** does the rest!
@@ -33,6 +32,7 @@ A **TypeScript-based** Expo Config Plugin that automates the native setup for th
    ```bash
    npm install expo-config-plugin-appodeal react-native-appodeal
    ```
+
 ````
 
 Or with yarn:
@@ -41,7 +41,7 @@ Or with yarn:
 yarn add expo-config-plugin-appodeal react-native-appodeal
 ```
 
-2. **Configure** in your `app.json` or `app.config.js`.  
+2. **Configure** in your `app.json` or `app.config.js`.
    For a simple `app.json`, add:
 
    ```jsonc
@@ -55,8 +55,8 @@ yarn add expo-config-plugin-appodeal react-native-appodeal
              "appKey": "YOUR_APPODEAL_APP_KEY",
 
              // Optional: override default Pod & Gradle SDK versions
-             "iosSdkVersion": "3.5.0",
-             "androidSdkVersion": "3.5.0.0"
+             "iosSdkVersion": "3.5.2",
+             "androidSdkVersion": "3.5.2.0"
            }
          ]
        ],
@@ -125,13 +125,13 @@ If you prefer using environment variables, you can access `process.env.EXPO_PUBL
 
 ## 💡 Common Questions
 
-**Q: Why do I only see “no fill” or no ads on iOS?**  
+**Q: Why do I only see “no fill” or no ads on iOS?**
 A: By default, `pod 'Appodeal'` only installs **core**. You might need to add specific adapter pods for each ad network you intend to use. See [Appodeal’s iOS docs](https://wiki.appodeal.com/en/ios/Get_Started) for the list of adapter pods.
 
-**Q: Do I still need to call `Appodeal.initialize()`?**  
+**Q: Do I still need to call `Appodeal.initialize()`?**
 A: Yes! This plugin only sets up the native dependencies. You must still call `initialize` in your JS code with your App Key.
 
-**Q: Will it conflict with the official `react-native-appodeal` instructions?**  
+**Q: Will it conflict with the official `react-native-appodeal` instructions?**
 A: It replaces the manual Podfile/Gradle edits from those instructions. You still need `react-native-appodeal` installed for the JavaScript APIs, but you do **not** need to manually edit your Podfile or Gradle files—this plugin handles that.
 
 ---
@@ -183,3 +183,4 @@ If you cloned or forked this repo to maintain the plugin, here’s how to develo
 ```
 
 ```
+````

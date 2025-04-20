@@ -35,8 +35,8 @@ const withAppodealPlugin: ConfigPlugin<AppodealPluginProps> = (
     '<YOUR_DEFAULT_KEY>';
 
   // Default versions if none provided
-  const iosSdkVersion = props.iosSdkVersion ?? '3.5.0';
-  const androidSdkVersion = props.androidSdkVersion ?? '3.5.0.0';
+  const iosSdkVersion = props.iosSdkVersion ?? '3.5.2';
+  const androidSdkVersion = props.androidSdkVersion ?? '3.5.2.0';
 
   // 1) Add the Appodeal Maven repo to android/build.gradle (project-level)
   config = withProjectBuildGradle(config, (configWithGradle) => {
