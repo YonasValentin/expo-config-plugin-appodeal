@@ -12,8 +12,8 @@ const withAppodealPlugin = (config, props = {}) => {
     // Fallback to ENV if no explicit appKey passed
     const appKey = (_b = (_a = props.appKey) !== null && _a !== void 0 ? _a : process.env.EXPO_PUBLIC_APPODEAL_KEY) !== null && _b !== void 0 ? _b : '<YOUR_DEFAULT_KEY>';
     // Default versions if none provided
-    const iosSdkVersion = (_c = props.iosSdkVersion) !== null && _c !== void 0 ? _c : '3.5.0';
-    const androidSdkVersion = (_d = props.androidSdkVersion) !== null && _d !== void 0 ? _d : '3.5.0.0';
+    const iosSdkVersion = (_c = props.iosSdkVersion) !== null && _c !== void 0 ? _c : '3.5.2';
+    const androidSdkVersion = (_d = props.androidSdkVersion) !== null && _d !== void 0 ? _d : '3.5.2.0';
     // 1) Add the Appodeal Maven repo to android/build.gradle (project-level)
     config = (0, config_plugins_1.withProjectBuildGradle)(config, (configWithGradle) => {
         let gradleContents = configWithGradle.modResults.contents;
