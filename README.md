@@ -1,4 +1,3 @@
-````md
 # expo-config-plugin-appodeal
 
 A **TypeScript-based** Expo Config Plugin that automates the native setup for the **Appodeal** ads SDK in Expo‑managed apps (SDK 48+). This plugin saves you from manually editing Podfiles, Gradle files, and Info.plist. Just install the plugin, configure your `app.json`, and **EAS Build** does the rest!
@@ -23,6 +22,7 @@ A **TypeScript-based** Expo Config Plugin that automates the native setup for th
    - Exposes your key at runtime via `config.extra.appodealKey`.
 
 4. **One‑Step Integration**:
+
    - No more manual `Podfile` or `Gradle` edits – everything happens automatically during `expo prebuild` or EAS Build.
 
 ---
@@ -34,15 +34,14 @@ A **TypeScript-based** Expo Config Plugin that automates the native setup for th
    ```bash
    npm install expo-config-plugin-appodeal react-native-appodeal
    ```
-````
 
-Or with yarn:
+   Or with yarn:
 
-```bash
-yarn add expo-config-plugin-appodeal react-native-appodeal
-```
+   ```bash
+   yarn add expo-config-plugin-appodeal react-native-appodeal
+   ```
 
-2. **Configure** in your `app.json` or `app.config.js`.
+2. **Configure** in your `app.json` or `app.config.js`.  
    For a simple `app.json`, add:
 
    ```jsonc
@@ -113,7 +112,7 @@ export default function App() {
 }
 ```
 
-If you prefer using environment variables, you can access `process.env.EXPO_PUBLIC_APPODEAL_KEY` or from `Constants.expoConfig?.extra?.appodealKey`.
+If you prefer using environment variables, you can access `process.env.EXPO_PUBLIC_APPODEAL_KEY` or `Constants.expoConfig?.extra?.appodealKey`.
 
 ---
 
@@ -178,7 +177,7 @@ If you cloned or forked this repo to maintain the plugin, here’s how to develo
 
 ---
 
-## 💰 You can help me by Donating
+## 💰 You Can Help Me by Donating
 
 [![BuyMeACoffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/yonasvalentin)
 
@@ -187,7 +186,3 @@ If you cloned or forked this repo to maintain the plugin, here’s how to develo
 ### License
 
 [MIT License](LICENSE) – free to use, modify, and distribute.
-
-```
-
-```
