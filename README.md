@@ -1,3 +1,4 @@
+````md
 # expo-config-plugin-appodeal
 
 A **TypeScript-based** Expo Config Plugin that automates the native setup for the **Appodeal** ads SDK in Expo‑managed apps (SDK 48+). This plugin saves you from manually editing Podfiles, Gradle files, and Info.plist. Just install the plugin, configure your `app.json`, and **EAS Build** does the rest!
@@ -18,7 +19,7 @@ A **TypeScript-based** Expo Config Plugin that automates the native setup for th
 
 3. **Configuration**:
 
-   - Allows you to provide an Appodeal Key (`appKey`) via plugin options or environment (EXPO_PUBLIC_APPODEAL_KEY).
+   - Allows you to provide an Appodeal Key (`appKey`) via plugin options or environment (`EXPO_PUBLIC_APPODEAL_KEY`).
    - Exposes your key at runtime via `config.extra.appodealKey`.
 
 4. **One‑Step Integration**:
@@ -29,10 +30,10 @@ A **TypeScript-based** Expo Config Plugin that automates the native setup for th
 ## 📦 Installation
 
 1. **Install** the plugin and the `react-native-appodeal` library:
+
    ```bash
    npm install expo-config-plugin-appodeal react-native-appodeal
    ```
-
 ````
 
 Or with yarn:
@@ -103,7 +104,10 @@ export default function App() {
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Button title="Show Interstitial" onPress={() => Appodeal.show(AppodealAdType.INTERSTITIAL)} />
+      <Button
+        title="Show Interstitial"
+        onPress={() => Appodeal.show(AppodealAdType.INTERSTITIAL)}
+      />
     </View>
   );
 }
@@ -115,7 +119,7 @@ If you prefer using environment variables, you can access `process.env.EXPO_PUBL
 
 ## ⚙️ Advanced iOS/Android Setup
 
-- **iOS Adapters**: If you want more ad networks than the built-in core, you must add network adapter pods (e.g., `APDGoogleAdMobAdapter`). You can do this manually by editing your Podfile or using [expo-build-properties](https://docs.expo.dev/versions/latest/config-plugins/build-properties/) to inject extra pods.
+- **iOS Adapters**: If you want more ad networks than the built-in core, you must add network adapter pods (e.g., `APDGoogleAdMobAdapter`). You can do this manually by editing your Podfile or by using [expo-build-properties](https://docs.expo.dev/versions/latest/config-plugins/build-properties/) to inject extra pods.
 
 - **Android Adapters**: The Gradle artifact `com.appodeal.ads:sdk:3.5.0.0` often includes multiple networks, but you’ll still need to define network-specific IDs in `AndroidManifest.xml` if the network requires them (for example, AdMob’s App ID).
 
@@ -125,13 +129,13 @@ If you prefer using environment variables, you can access `process.env.EXPO_PUBL
 
 ## 💡 Common Questions
 
-**Q: Why do I only see “no fill” or no ads on iOS?**
+**Q: Why do I only see “no fill” or no ads on iOS?**  
 A: By default, `pod 'Appodeal'` only installs **core**. You might need to add specific adapter pods for each ad network you intend to use. See [Appodeal’s iOS docs](https://wiki.appodeal.com/en/ios/Get_Started) for the list of adapter pods.
 
-**Q: Do I still need to call `Appodeal.initialize()`?**
+**Q: Do I still need to call `Appodeal.initialize()`?**  
 A: Yes! This plugin only sets up the native dependencies. You must still call `initialize` in your JS code with your App Key.
 
-**Q: Will it conflict with the official `react-native-appodeal` instructions?**
+**Q: Will it conflict with the official `react-native-appodeal` instructions?**  
 A: It replaces the manual Podfile/Gradle edits from those instructions. You still need `react-native-appodeal` installed for the JavaScript APIs, but you do **not** need to manually edit your Podfile or Gradle files—this plugin handles that.
 
 ---
@@ -141,9 +145,11 @@ A: It replaces the manual Podfile/Gradle edits from those instructions. You stil
 If you cloned or forked this repo to maintain the plugin, here’s how to develop and publish:
 
 1. **Install** dependencies:
+
    ```bash
    npm install
    ```
+
 2. **Build** the plugin code (TypeScript → JS):
 
    ```bash
@@ -162,10 +168,12 @@ If you cloned or forked this repo to maintain the plugin, here’s how to develo
    ```
 
 4. **Publish** changes:
+
    ```bash
    npm login
    npm publish --access public
    ```
+
    That’s it—the plugin is live on npm!
 
 ---
@@ -183,4 +191,3 @@ If you cloned or forked this repo to maintain the plugin, here’s how to develo
 ```
 
 ```
-````
