@@ -1,3 +1,4 @@
+// plugin.ts
 import {
   ConfigPlugin,
   createRunOncePlugin,
@@ -9,129 +10,132 @@ import {
 import fs from 'fs';
 import path from 'path';
 
-/**
- * Define any plugin options you'd like to expose.
- * For example, allowing custom iOS/Android versions of the SDK
- * or letting the user specify their Appodeal key inline.
- */
 export interface AppodealPluginProps {
-  /** Provide your Appodeal key inline. If not set, uses process.env.EXPO_PUBLIC_APPODEAL_KEY. */
   appKey?: string;
-  /** iOS SDK pod version (defaults to "3.5.0"). */
   iosSdkVersion?: string;
-  /** Android SDK version (defaults to "3.5.0.0"). */
   androidSdkVersion?: string;
+  fullSetup?: boolean;
 }
 
-// Minimal change: typed constant instead of "function" declaration
 const withAppodealPlugin: ConfigPlugin<AppodealPluginProps> = (
   config,
   props = {}
 ) => {
-  // Fallback to ENV if no explicit appKey passed
   const appKey =
     props.appKey ??
     process.env.EXPO_PUBLIC_APPODEAL_KEY ??
     '<YOUR_DEFAULT_KEY>';
-
-  // Default versions if none provided
   const iosSdkVersion = props.iosSdkVersion ?? '3.5.2';
   const androidSdkVersion = props.androidSdkVersion ?? '3.5.2.0';
+  const fullSetup = props.fullSetup === true;
 
-  // 1) Add the Appodeal Maven repo to android/build.gradle (project-level)
-  config = withProjectBuildGradle(config, (configWithGradle) => {
-    let gradleContents = configWithGradle.modResults.contents;
-    const repoLine = `maven { url "https://artifactory.appodeal.com/appodeal" }`;
-
-    if (!gradleContents.includes(repoLine)) {
-      gradleContents = gradleContents.replace(
+  // 1) Android: add Appodeal Maven repo
+  config = withProjectBuildGradle(config, (c) => {
+    const marker = `maven { url "https://artifactory.appodeal.com/appodeal" }`;
+    if (!c.modResults.contents.includes(marker)) {
+      c.modResults.contents = c.modResults.contents.replace(
         /(allprojects\s*{[\s\S]*?repositories\s*{)/,
-        `$1\n        ${repoLine}`
+        `$1\n        ${marker}`
       );
     }
-    configWithGradle.modResults.contents = gradleContents;
-    return configWithGradle;
+    return c;
   });
 
-  // 2) Add the Appodeal SDK dependency in android/app/build.gradle (app-level)
-  config = withAppBuildGradle(config, (configWithGradle) => {
-    let gradleContents = configWithGradle.modResults.contents;
-    const depLine = `    implementation 'com.appodeal.ads:sdk:${androidSdkVersion}'`;
-
-    if (!gradleContents.includes(depLine)) {
-      gradleContents = gradleContents.replace(
-        /(dependencies\s*{)/,
-        `$1\n${depLine}`
-      );
+  // 2) Android: add core + optional adapter
+  config = withAppBuildGradle(config, (c) => {
+    let text = c.modResults.contents;
+    const core = `    implementation 'com.appodeal.ads:sdk:${androidSdkVersion}'`;
+    if (!text.includes(core)) {
+      text = text.replace(/(dependencies\s*{)/, `$1\n${core}`);
     }
-    configWithGradle.modResults.contents = gradleContents;
-    return configWithGradle;
+    if (fullSetup) {
+      const admob = `    implementation 'com.appodeal.ads:admob-adapter:${androidSdkVersion}'`;
+      if (!text.includes(admob)) {
+        text = text.replace(/(dependencies\s*{)/, `$1\n${admob}`);
+      }
+    }
+    c.modResults.contents = text;
+    return c;
   });
 
-  // 3) Patch iOS Podfile to include Appodeal + `use_frameworks!`
+  // 3) iOS: podfile tweaks
   config = withDangerousMod(config, [
     'ios',
-    async (iosConfig) => {
-      const podfilePath = path.join(
-        iosConfig.modRequest.platformProjectRoot,
-        'Podfile'
-      );
+    async (configWithMod) => {
+      const projectRoot = configWithMod.modRequest.platformProjectRoot;
+      const podfilePath = path.join(projectRoot, 'Podfile');
       if (fs.existsSync(podfilePath)) {
-        let podfileContent = await fs.promises.readFile(podfilePath, 'utf8');
+        let podfile = await fs.promises.readFile(podfilePath, 'utf8');
 
-        const appodealPodSnippet = `
+        // inject CocoaPods source lines at top
+        const sources = [
+          "source 'https://github.com/expo/expo.git'",
+          "source 'https://github.com/appodeal/CocoaPods.git'",
+          "source 'https://github.com/bidon-io/CocoaPods_Specs.git'",
+          "source 'https://cdn.cocoapods.org'",
+        ];
+        const lines = podfile.split('\n');
+        let insertAt = 0;
+        for (const src of sources) {
+          if (!podfile.includes(src)) {
+            lines.splice(insertAt++, 0, src);
+          }
+        }
+        podfile = lines.join('\n');
+
+        // inject Appodeal pod + use_frameworks!
+        const snippet = `
   # Appodeal
   pod 'Appodeal', '${iosSdkVersion}'
   use_frameworks!
 `;
-
-        // Avoid duplicating if 'pod "Appodeal"' is already present
-        if (!podfileContent.includes(`pod 'Appodeal'`)) {
-          // Attempt to insert after "use_react_native!...":
-          const anchorMatch = podfileContent.match(
-            /use_react_native!\([\s\S]*?\)\n/
-          );
-          if (anchorMatch) {
-            podfileContent = podfileContent.replace(
-              anchorMatch[0],
-              `${anchorMatch[0]}${appodealPodSnippet}`
-            );
+        if (!podfile.includes(`pod 'Appodeal'`)) {
+          const anchor = podfile.match(/use_react_native!\([\s\S]*?\)\n/);
+          if (anchor) {
+            podfile = podfile.replace(anchor[0], anchor[0] + snippet);
           } else {
-            // If no known anchor, just append to the end
-            podfileContent += `\n${appodealPodSnippet}\n`;
+            podfile += '\n' + snippet;
           }
-          await fs.promises.writeFile(podfilePath, podfileContent, 'utf8');
         }
+
+        // optional: inject AdMob adapter pod
+        if (fullSetup && !podfile.includes(`pod 'APDGoogleAdMobAdapter'`)) {
+          podfile += `\n  pod 'APDGoogleAdMobAdapter', '${iosSdkVersion}.0'`;
+        }
+
+        await fs.promises.writeFile(podfilePath, podfile, 'utf8');
       }
-      return iosConfig;
+
+      return configWithMod;
     },
   ]);
 
-  // 4) Update Info.plist to allow ATS
-  config = withInfoPlist(config, (configWithInfo) => {
-    configWithInfo.modResults.NSAppTransportSecurity = {
+  // 4) Info.plist: allow ATS + sample SKAdNetwork + AdMob App ID
+  config = withInfoPlist(config, (c) => {
+    c.modResults.NSAppTransportSecurity = {
       NSAllowsArbitraryLoads: true,
     };
-    return configWithInfo;
+    if (fullSetup) {
+      c.modResults.SKAdNetworkItems = c.modResults.SKAdNetworkItems || [];
+      if (
+        !c.modResults.SKAdNetworkItems.some(
+          (i: any) => i.SKAdNetworkIdentifier === '22mmun2rn5.skadnetwork'
+        )
+      ) {
+        c.modResults.SKAdNetworkItems.push({
+          SKAdNetworkIdentifier: '22mmun2rn5.skadnetwork',
+        });
+      }
+    }
+    // if you want to set GADApplicationIdentifier
+    c.modResults.GADApplicationIdentifier = appKey;
+    return c;
   });
 
-  // Expose the appKey for your JS to read at runtime if desired
-  config.extra = config.extra || {};
-  config.extra.appodealKey = appKey;
-
+  // expose appodealKey in JS
+  config.extra = { ...config.extra, appodealKey: appKey };
   return config;
 };
 
-// We import our package.json so we can pass the plugin name + version
 const pkg = require('../package.json');
-
-/**
- * By wrapping with `createRunOncePlugin` we ensure that if
- * the user calls this plugin multiple times with the same config,
- * it won't patch Gradle/Podfiles repeatedly in a single build.
- */
-export default createRunOncePlugin<AppodealPluginProps>(
-  withAppodealPlugin,
-  pkg.name,
-  pkg.version
-);
+export default createRunOncePlugin(withAppodealPlugin, pkg.name, pkg.version);
