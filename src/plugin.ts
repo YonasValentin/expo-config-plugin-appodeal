@@ -62,37 +62,27 @@ const withAppodealPlugin: ConfigPlugin<AppodealPluginProps> = (
       const podfilePath = path.join(iosDir, 'Podfile');
       if (fs.existsSync(podfilePath)) {
         let podfile = await fs.promises.readFile(podfilePath, 'utf8');
-
         const sources = [
           "source 'https://github.com/expo/expo.git'",
           "source 'https://github.com/appodeal/CocoaPods.git'",
           "source 'https://github.com/bidon-io/CocoaPods_Specs.git'",
           "source 'https://cdn.cocoapods.org'",
         ];
-        const lines = podfile.split('\n');
         for (let i = sources.length - 1; i >= 0; i--) {
           if (!podfile.includes(sources[i])) {
-            lines.unshift(sources[i]);
+            podfile = `${sources[i]}\n${podfile}`;
           }
         }
-        podfile = lines.join('\n');
-
         const snippet = `
-  # Appodeal
   pod 'Appodeal', '${iosSdkVersion}'
   use_frameworks!
 `;
-        if (!podfile.includes(`pod 'Appodeal'`)) {
-          const anchor = podfile.match(/use_react_native!\([\s\S]*?\)\n/);
-          podfile = anchor
-            ? podfile.replace(anchor[0], anchor[0] + snippet)
-            : podfile + '\n' + snippet;
+        if (!podfile.includes("pod 'Appodeal'")) {
+          podfile += `\n${snippet}`;
         }
-
         if (fullSetup && !podfile.includes(`pod 'APDGoogleAdMobAdapter'`)) {
           podfile += `\n  pod 'APDGoogleAdMobAdapter', '${iosSdkVersion}.0'`;
         }
-
         await fs.promises.writeFile(podfilePath, podfile, 'utf8');
       }
       return expoConfig;
